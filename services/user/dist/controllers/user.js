@@ -1,6 +1,9 @@
 import User from "../model/User.js";
 import jwt from 'jsonwebtoken';
 import TryCatch from "../utils/TryCatch.js";
+import getBuffer from "../utils/dataUri.js";
+import { v2 as cloudinary } from 'cloudinary';
+// Login or Register user
 export const loginUser = TryCatch(async (req, res) => {
     try {
         const { email, name, image } = req.body;
@@ -27,6 +30,7 @@ export const loginUser = TryCatch(async (req, res) => {
         });
     }
 });
+// Get my profile
 export const myProfile = TryCatch(async (req, res) => {
     if (!req.user) {
         res.status(401).json({ message: "Unauthorized" });
@@ -37,6 +41,7 @@ export const myProfile = TryCatch(async (req, res) => {
         user: req.user,
     });
 });
+// Get user profile by id
 export const getUserProfile = TryCatch(async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) {
@@ -47,6 +52,52 @@ export const getUserProfile = TryCatch(async (req, res) => {
     }
     res.status(200).json({
         message: "User fetched successfully",
+        user
+    });
+});
+// Update user profile
+export const updateUser = TryCatch(async (req, res) => {
+    const { name, instagram, facebook, linkedin, bio } = req.body;
+    const user = await User.findByIdAndUpdate(req.user?._id, {
+        name, instagram, facebook, linkedin, bio
+    }, { new: true });
+    const token = jwt.sign({ user }, process.env.JWT_SEC, {
+        expiresIn: "3d",
+    });
+    res.status(200).json({
+        message: "Profile updated successfully",
+        token,
+        user
+    });
+});
+// Update ProfilePic
+export const updateProfilePic = TryCatch(async (req, res) => {
+    const file = req.file;
+    if (!file) {
+        res.status(400).json({
+            message: "File not found"
+        });
+        return;
+    }
+    const fileBuffer = getBuffer(file);
+    if (!fileBuffer || !fileBuffer.content) {
+        res.status(500).json({
+            message: "Something went wrong"
+        });
+        return;
+    }
+    const cloud = await cloudinary.uploader.upload(fileBuffer.content, {
+        folder: "blogs"
+    });
+    const user = await User.findByIdAndUpdate(req.user?._id, {
+        image: cloud.secure_url
+    }, { new: true });
+    const token = jwt.sign({ user }, process.env.JWT_SEC, {
+        expiresIn: "3d",
+    });
+    res.status(200).json({
+        message: "Profile picture updated successfully",
+        token,
         user
     });
 });
