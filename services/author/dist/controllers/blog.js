@@ -88,4 +88,21 @@ export const updateBlog = TryCatch(async (req, res) => {
         res.status(500).json({ message: error.message || "Internal Server Error" });
     }
 });
+// For deleting the blog
+export const deleteBlog = TryCatch(async (req, res) => {
+    const blog = await sql `SELECT * FROM blogs WHERE id = ${req.params.id}`;
+    if (blog.length === 0) {
+        res.status(404).json({ message: "Blog not found with this id" });
+        return; // <-- Make sure to return here!
+    }
+    const currentBlog = blog[0];
+    if (currentBlog.author !== req.user?._id) {
+        res.status(403).json({ message: "You are not authorized to delete this blog" });
+        return;
+    }
+    await sql `DELETE FROM blogs WHERE id = ${req.params.id}`;
+    await sql `DELETE FROM comments WHERE blogid = ${req.params.id}`; // <-- use correct column name
+    await sql `DELETE FROM savedblogs WHERE blogid = ${req.params.id}`; // <-- use correct column name
+    res.status(200).json({ message: "Blog deleted successfully" });
+});
 //# sourceMappingURL=blog.js.map
