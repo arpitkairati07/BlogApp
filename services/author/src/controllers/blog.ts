@@ -103,7 +103,7 @@ export const deleteBlog = TryCatch(async(req: AuthenticatedRequest, res) => {
   const blog = await sql`SELECT * FROM blogs WHERE id = ${req.params.id}`;
   if (blog.length === 0) {
     res.status(404).json({ message: "Blog not found with this id" });
-    return; // <-- Make sure to return here!
+    return; 
   }
   const currentBlog = blog[0]!;
   if (currentBlog.author !== req.user?._id) {
@@ -111,8 +111,8 @@ export const deleteBlog = TryCatch(async(req: AuthenticatedRequest, res) => {
     return;
   }
   await sql`DELETE FROM blogs WHERE id = ${req.params.id}`;
-  await sql`DELETE FROM comments WHERE blogid = ${req.params.id}`; // <-- use correct column name
-  await sql`DELETE FROM savedblogs WHERE blogid = ${req.params.id}`; // <-- use correct column name
+  await sql`DELETE FROM comments WHERE blogid = ${req.params.id}`;
+  await sql`DELETE FROM savedblogs WHERE blogid = ${req.params.id}`;
 
   res.status(200).json({ message: "Blog deleted successfully" });
 });
