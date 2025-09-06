@@ -1,25 +1,66 @@
 import axios from "axios";
 import { sql } from "../utils/db.js";
 import TryCatch from "../utils/TryCatch.js";
+import { redisClient } from "../server.js";
 // Get All Blogs
 export const getAllBlogs = TryCatch(async (req, res) => {
-    const { searchQuery, category } = req.query;
+    const { searchQuery = "", category = "" } = req.query;
+    const cacheKey = `blogs:${searchQuery}:${category}`;
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+        console.log(`Data coming from Redis Database`);
+        res.json(JSON.parse(cached));
+        return;
+    }
     let blogs;
     if (searchQuery && category) {
-        blogs = sql `SELECT * FROM blogs WHERE (title ILIKE ${`%${searchQuery}%`} OR description ILIKE ${`%${searchQuery}%`} ) AND category = ${category} ORDER BY created_at DESC`;
+        blogs = await sql `
+            SELECT * FROM blogs 
+            WHERE (title ILIKE ${`%${searchQuery}%`} OR description ILIKE ${`%${searchQuery}%`})
+            AND category = ${category}
+            ORDER BY created_at DESC
+        `;
+    }
+    else if (category) {
+        blogs = await sql `
+            SELECT * FROM blogs 
+            WHERE category = ${category}
+            ORDER BY created_at DESC
+        `;
     }
     else if (searchQuery) {
-        blogs = sql `SELECT * FROM blogs WHERE (title ILIKE ${`%${searchQuery}%`} OR description ILIKE ${`%${searchQuery}%`} ) ORDER BY created_at DESC`;
+        blogs = await sql `
+            SELECT * FROM blogs 
+            WHERE (title ILIKE ${`%${searchQuery}%`} OR description ILIKE ${`%${searchQuery}%`})
+            ORDER BY created_at DESC
+        `;
     }
     else {
-        blogs = sql `SELECT * FROM blogs ORDER BY created_at DESC`;
+        blogs = await sql `SELECT * FROM blogs ORDER BY created_at DESC`;
     }
-    res.status(200).json({ blogs: await blogs });
+    console.log(`Data coming from Postgress Database`);
+    await redisClient.set(cacheKey, JSON.stringify(blogs), { EX: 1800 });
+    res.status(200).json({ blogs });
 });
-//Get Single Song
+//Get Single Blog
 export const getSingleBlog = TryCatch(async (req, res) => {
-    const blog = await sql `SELECT * FROM blogs WHERE id = ${req.params.id}`;
+    const blogid = req.params.id;
+    const cacheKey = `blog:${blogid}`;
+    const cached = await redisClient.get(cacheKey);
+    if (cached) {
+        console.log(`Data coming from Redis Database`);
+        res.json(JSON.parse(cached));
+        return;
+    }
+    const blog = await sql `SELECT * FROM blogs WHERE id = ${blogid}`;
+    if (blog.length === 0) {
+        return res.status(404).json({ message: "Blog Not Found" });
+        return;
+    }
     const { data } = await axios.get(`${process.env.USER_SERVICE_URL}/api/v1/user/${blog[0]?.author}`);
+    const ResponseData = { blog: blog[0], author: data.user };
+    await redisClient.set(cacheKey, JSON.stringify(ResponseData), { EX: 1800 });
+    console.log(`Data coming from Postgress Database`);
     res.status(200).json({ blog: blog[0], author: data.user });
 });
 //# sourceMappingURL=blog.js.map
