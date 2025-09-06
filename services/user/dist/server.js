@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import connectDb from './utils/db.js';
 import userRoutes from "./routes/user.js";
 import { v2 as cloudinary } from 'cloudinary';
+import cors from 'cors';
 dotenv.config();
 cloudinary.config({
     cloud_name: process.env.Cloud_name || "",
@@ -12,6 +13,7 @@ cloudinary.config({
 });
 const app = express();
 app.use(express.json());
+app.use(cors());
 connectDb();
 // Fixed the route path - added leading slash
 app.use("/api/v1", userRoutes);
