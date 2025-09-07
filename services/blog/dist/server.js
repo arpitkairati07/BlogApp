@@ -2,8 +2,13 @@ import express from "express";
 import dotenv from "dotenv";
 import blogRoutes from "./routes/blog.js";
 import { createClient } from 'redis';
+import { startCacheConsumer } from "./utils/consumer.js";
+import cors from "cors";
 dotenv.config();
 const app = express();
+app.use(express.json());
+app.use(cors());
+startCacheConsumer();
 app.use("/api/v1", blogRoutes);
 const redisUrl = process.env.REDIS_URL;
 if (!redisUrl) {
