@@ -20,24 +20,29 @@ import { redirect } from 'next/navigation';
 import Loading from '@/components/loading';
 
 const LoginPage = () => {
-  const {isAuth,user,setIsAuth, loading, setLoading}=userAppData();
+  const {isAuth,user,setIsAuth, loading, setLoading,setUser}=userAppData();
   if(isAuth){
     return redirect("/");
   }
     const responseGoogle = async(authResult : any) =>{
+      setLoading(true);
         try {
             const result=await axios.post(`${user_service}/api/v1/login`,{
                 code:authResult["code"]
             })
-            const data = result.data as {token:string,message:string};
+            const data = result.data as {token:string,message:string,user: typeof user};
             Cookies.set("token",data.token,{
                 expires:3,
                 secure:true,
                 path:"/"
             });
             toast.success(data.message)
+            setIsAuth(true);
+            setLoading(false);
+            setUser(data.user);
         } catch (error) {
             toast.error("Login failed")
+            setLoading(false);
         }
     };
     const googleLogin = useGoogleLogin({

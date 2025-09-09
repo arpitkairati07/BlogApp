@@ -3,11 +3,14 @@
 import Link from "next/link";
 import React, { useState } from "react";
 import { Button } from "./ui/button";
-import { LogIn, Menu, X } from "lucide-react";
+import { CircleUserRound, LogIn, Menu, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { userAppData } from "@/context/AppContext";
 
 const Navbar = () => {
   const [isOpen, setIsOpen] = useState(false);
+
+  const {loading,isAuth} = userAppData();
   return (
     <nav className="bg-white shadow-md p-4 z-50">
       <div className="container mx-auto flex justify-between items-center px-0">
@@ -35,11 +38,13 @@ const Navbar = () => {
               Saved Blogs
             </Link>
           </li>
-          <li>
-            <Link href={"/login"} className="hover:text-blue-500">
+          {loading ? (""):(<li>
+           {isAuth ? (<Link href={"/profile"} className="hover:text-blue-500">
+              <CircleUserRound></CircleUserRound>
+            </Link>) : (<Link href={"/login"} className="hover:text-blue-500">
               <LogIn></LogIn>
-            </Link>
-          </li>
+            </Link>)} 
+          </li>)}
         </ul>
       </div>
       <div className={cn("md:hidden overflow-hidden transition-all duration-300 ease-in-out", isOpen ? "max-h-40 opacity-100" : "max-h-0 opacity-0")}>

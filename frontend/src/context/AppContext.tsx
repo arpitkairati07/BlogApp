@@ -42,6 +42,7 @@ interface AppContextType {
   user: User | null;
   loading:boolean;
   isAuth:boolean;
+  setUser: React.Dispatch<React.SetStateAction<User | null>>;
   setLoading : React.Dispatch<React.SetStateAction<boolean>>;
   setIsAuth : React.Dispatch<React.SetStateAction<boolean>>;
 }
@@ -53,7 +54,7 @@ interface AppProviderProps {
 }
 
 export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
-  const [user, SetUser] = useState<User | null>(null);
+  const [user, setUser] = useState<User | null>(null);
   const [isAuth, setIsAuth] = useState<boolean>(false);
   const [loading, setLoading] = useState<boolean>(true);
 
@@ -65,7 +66,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           Authorization: `Bearer ${token}`,
         },
       });
-      SetUser(data as User);
+      setUser(data as User);
       setIsAuth(true);
       setLoading(false);
     } catch (error) {
@@ -77,7 +78,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     fetchUser();
   }, []);
   return (
-    <AppContext.Provider value={{ user,setIsAuth,isAuth,loading,setLoading }}>
+    <AppContext.Provider value={{ user,setIsAuth,isAuth,loading,setLoading,setUser }}>
       <GoogleOAuthProvider clientId="1044738267238-fr4rohnkefmoecku7eetdi04ddva9201.apps.googleusercontent.com">
         {children}
         <Toaster />

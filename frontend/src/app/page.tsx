@@ -1,4 +1,4 @@
-"use-client";
+"use client";
 import Loading from '@/components/loading';
 import { userAppData } from '@/context/AppContext';
 import React from 'react'
