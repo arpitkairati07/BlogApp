@@ -13,10 +13,20 @@ import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
-import { useRouter } from "next/navigation";
+import { redirect, useRouter } from "next/navigation";
 
 const ProfilePage = () => {
-  const { user, setUser } = userAppData();
+  const { user, setUser,logOutUser } = userAppData();
+
+  if(!user){
+    return redirect('/login');
+  }
+
+  const logOutHandler = () =>{
+    if(logOutUser){
+      logOutUser();
+    }
+  }
   const inputRef = useRef<HTMLInputElement>(null);
   const [loading, setLoading] = useState(false);
   const [open, setOpen] = useState(false);
@@ -149,7 +159,7 @@ const ProfilePage = () => {
                 )}
               </div>
               <div className="flex flex-col sm:flex-row gap-2 mt-6 w-full justify-center">
-                <Button>LogOut</Button>
+                <Button onClick={logOutHandler}>LogOut</Button>
                 <Button>Add Blog</Button>
                 <Dialog open={open} onOpenChange={setOpen}>
                   <DialogTrigger asChild>

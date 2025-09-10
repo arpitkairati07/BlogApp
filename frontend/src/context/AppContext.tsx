@@ -9,7 +9,7 @@ import React, {
 } from "react";
 import Cookies from "js-cookie";
 import axios from "axios";
-import { Toaster } from "react-hot-toast";
+import toast, { Toaster } from "react-hot-toast";
 import { GoogleOAuthProvider } from "@react-oauth/google";
 
 export const user_service = "http://localhost:5000";
@@ -42,6 +42,7 @@ interface AppContextType {
   user: User | null;
   loading:boolean;
   isAuth:boolean;
+  logOutUser?:()=>Promise<void>;
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   setLoading : React.Dispatch<React.SetStateAction<boolean>>;
   setIsAuth : React.Dispatch<React.SetStateAction<boolean>>;
@@ -75,11 +76,18 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       setLoading(false);
     }
   }
+
+  async function logOutUser(){
+    Cookies.remove("token");
+    setUser(null);
+    setIsAuth(false);
+    toast.success("Logged out successfully");
+  }
   useEffect(() => {
     fetchUser();
   }, []);
   return (
-    <AppContext.Provider value={{ user,setIsAuth,isAuth,loading,setLoading,setUser }}>
+    <AppContext.Provider value={{ user,setIsAuth,isAuth,loading,setLoading,setUser,logOutUser }}>
       <GoogleOAuthProvider clientId="1044738267238-fr4rohnkefmoecku7eetdi04ddva9201.apps.googleusercontent.com">
         {children}
         <Toaster />
