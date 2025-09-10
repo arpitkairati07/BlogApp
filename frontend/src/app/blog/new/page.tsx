@@ -97,6 +97,27 @@ const AddBlog = () => {
     setAiTitle(false);
   }
 }
+const [aiDescription, setAiDescription] = useState(false);
+
+const aiDescriptionResponse = async () => {
+  try {
+    setAiDescription(true);
+    const { data } = await axios.post(`${author_service}/api/v1/ai/description`, {
+      title: formData.title,
+      description: formData.description
+    }, {
+      headers: {
+        Authorization: `Bearer ${Cookies.get("token")}`,
+      },
+    });
+    const response = data as { description: string };
+    setFormData({ ...formData, description: response.description ?? "" });
+  } catch (error) {
+    toast.error("Something went wrong");
+  } finally {
+    setAiDescription(false);
+  }
+};
 
   const config = useMemo(
     () => ({
@@ -145,15 +166,17 @@ const AddBlog = () => {
 
             <Label>Description</Label>
             <div className="flex justify-center items-center gap-2">
-              <Input
-                name="description"
-                value={formData.description}
-                onChange={handleInputChange}
-                required
-                placeholder="Enter Blog Description"
-              ></Input>
-              <Button type="button">
-                <RefreshCw />
+<Input
+  name="description"
+  value={formData.description ?? ""}
+  onChange={handleInputChange}
+  required
+  placeholder="Enter Blog Description"
+  className={aiDescription ? "animate-pulse placeholder:opacity-50" : ""}
+/>
+              <Button type="button"
+              onClick={aiDescriptionResponse} disabled={aiDescription}>
+                <RefreshCw className={aiDescription ? "animate-spin" : ""} />
               </Button>
             </div>
 

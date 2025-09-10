@@ -132,4 +132,27 @@ export const aiTitleResponse = TryCatch(async (req, res) => {
         .trim();
     res.status(200).json({ title: result });
 });
+export const aiDescriptionResponse = TryCatch(async (req, res) => {
+    const { title, description } = req.body;
+    const prompt = description === ""
+        ? `Generate a short blog description (20-40 words) based only on this title: "${title}". Your response must be a single sentence, no options, no greetings, no extra text. Do not explain. Do not say 'here is'. Just return the description only.`
+        : `Fix the grammar in the following blog description and return only the corrected sentence. Do not add anything else: "${description}"`;
+    const ai = new GoogleGenAI({
+        apiKey: process.env.Gemmini_Api_Key,
+    });
+    const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+    });
+    let rawtext = response.text ?? "";
+    if (!rawtext.trim()) {
+        res.status(200).json({ description: "" });
+        return;
+    }
+    const result = rawtext.replace(/\*\*/g, "")
+        .replace(/[\r\n]+/g, "")
+        .replace(/[*_`~`]/g, "")
+        .trim();
+    res.status(200).json({ description: result });
+});
 //# sourceMappingURL=blog.js.map
