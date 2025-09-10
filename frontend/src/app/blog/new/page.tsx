@@ -77,6 +77,26 @@ const AddBlog = () => {
       setLoading(false);
     }
   };
+  const[aiTitle,setAiTitle]=useState(false);
+
+  const aiTitleResponse = async () => {
+  try {
+    setAiTitle(true);
+    const { data } = await axios.post(`${author_service}/api/v1/ai/title`, {
+      text: formData.title
+    }, {
+      headers: {
+        Authorization: `Bearer ${Cookies.get("token")}`,
+      },
+    });
+    const response = data as { title: string }; 
+    setFormData({ ...formData, title: response.title });
+  } catch (error) {
+    toast.error("Something went wrong");
+  } finally {
+    setAiTitle(false);
+  }
+}
 
   const config = useMemo(
     () => ({
@@ -115,10 +135,12 @@ const AddBlog = () => {
                 onChange={handleInputChange}
                 required
                 placeholder="Enter Blog Title"
+                className={aiTitle ? "animate-pulse placeholder:opacity-50" : ""}
               ></Input>
-              <Button type="button">
-                <RefreshCw />
-              </Button>
+              {formData.title === "" ? "" :<Button type="button"
+              onClick={aiTitleResponse} disabled={aiTitle}>
+                <RefreshCw className={aiTitle ? "animate-spin" : ""} />
+              </Button>}
             </div>
 
             <Label>Description</Label>

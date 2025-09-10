@@ -121,4 +121,4 @@ export const updateProfilePic = TryCatch(async(req:AuthenticatedRequest,res)=>{
         token,
         user
     });
-})
+});

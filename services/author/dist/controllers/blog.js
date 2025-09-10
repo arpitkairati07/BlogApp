@@ -3,6 +3,8 @@ import { sql } from "../utils/db.js";
 import { inValidateCache } from "../utils/rabbitmq.js";
 import TryCatch from "../utils/TryCatch.js";
 import { v2 as cloudinary } from "cloudinary";
+import { GoogleGenAI } from "@google/genai";
+import { raw } from "express";
 export const createBlog = TryCatch(async (req, res) => {
     try {
         const { title, description, blogcontent, category } = req.body;
@@ -108,5 +110,26 @@ export const deleteBlog = TryCatch(async (req, res) => {
     await sql `DELETE FROM savedblogs WHERE blogid = ${req.params.id}`;
     await inValidateCache(['blogs:*', `blog:${req.params.id}`]);
     res.status(200).json({ message: "Blog deleted successfully" });
+});
+export const aiTitleResponse = TryCatch(async (req, res) => {
+    const { text } = req.body;
+    const prompt = `Correct the grammar of the following blog title and return only the corrected title without any additional text, formatting, or punctuation: "${text}"`;
+    const ai = new GoogleGenAI({
+        apiKey: process.env.Gemmini_Api_Key,
+    });
+    const response = await ai.models.generateContent({
+        model: "gemini-2.5-flash",
+        contents: prompt,
+    });
+    let rawtext = response.text;
+    if (!rawtext) {
+        res.status(400).json({ message: "Something went wrong" });
+        return;
+    }
+    const result = rawtext.replace(/\*\*/g, "")
+        .replace(/[\r\n]+/g, "")
+        .replace(/[*_`~`]/g, "")
+        .trim();
+    res.status(200).json({ title: result });
 });
 //# sourceMappingURL=blog.js.map
