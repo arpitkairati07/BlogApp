@@ -1,3 +1,5 @@
+"use client"
+
 import React from 'react'
 import {
   Sidebar,
@@ -11,6 +13,7 @@ import {
 } from './ui/sidebar'
 import { Input } from './ui/input'
 import { BoxSelect } from 'lucide-react'
+import { userAppData } from '@/context/AppContext'
 
 const SideBar = () => {
   const blogCategories = [
@@ -26,6 +29,8 @@ const SideBar = () => {
     "Study",
     "Other",
   ];
+
+  const {searchQuery,setSearchQuery,setCategory} =userAppData();
   return (
     <Sidebar>
       <SidebarHeader className='bg-white text-2xl font-bold mt-5'>
@@ -34,17 +39,18 @@ const SideBar = () => {
       <SidebarContent className='bg-white'>
         <SidebarGroup>
           <SidebarGroupLabel>Search</SidebarGroupLabel>
-          <Input type='text' placeholder='Search your desired blog' />
+          <Input type='text' value={searchQuery} onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
+          placeholder='Search your desired blog' />
           <SidebarGroupLabel>Categories</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
-              <SidebarMenuButton>
+              <SidebarMenuButton onClick={() => setCategory && setCategory("")}>
                 <BoxSelect />
                 <span>All</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {blogCategories.map((e, i) => (
-              <SidebarMenuItem key={i}>
+              <SidebarMenuItem key={i} onClick={() => setCategory && setCategory(e)}>
                 <SidebarMenuButton>
                   <BoxSelect />
                   <span>{e}</span>

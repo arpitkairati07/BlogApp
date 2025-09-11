@@ -22,7 +22,7 @@ import Loading from '@/components/loading';
 const LoginPage = () => {
   const {isAuth,user,setIsAuth, loading, setLoading,setUser}=userAppData();
   if(isAuth){
-    return redirect("/");
+    return redirect("/blogs");
   }
     const responseGoogle = async(authResult : any) =>{
       setLoading(true);

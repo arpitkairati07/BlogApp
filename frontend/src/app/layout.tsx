@@ -19,8 +19,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AppProvider><Navbar></Navbar> {children}</AppProvider>
-
+        <AppProvider>
+          <Navbar></Navbar> 
+          {children}
+        </AppProvider>
       </body>
     </html>
   );

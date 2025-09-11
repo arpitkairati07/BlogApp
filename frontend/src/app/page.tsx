@@ -1,16 +1,8 @@
-"use client";
-import HomeLayout from '@/components/homelayout';
-import Loading from '@/components/loading';
-import { userAppData } from '@/context/AppContext';
+import { redirect } from "next/navigation";
 import React from 'react'
 
 const Home = () => {
-  const {loading,blogLoading,blogs}=userAppData();
-  return (
-    <HomeLayout>
-      <div>{loading ? <Loading></Loading> : <div className="container mx-auto px-4"></div> }</div>
-    </HomeLayout>
-  )
+  return redirect("/blogs")
 }
 
-export default Home;
+export default Home
