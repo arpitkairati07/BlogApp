@@ -1,12 +1,15 @@
 "use client";
+import HomeLayout from '@/components/homelayout';
 import Loading from '@/components/loading';
 import { userAppData } from '@/context/AppContext';
 import React from 'react'
 
 const Home = () => {
-  const {loading}=userAppData();
+  const {loading,blogLoading,blogs}=userAppData();
   return (
-    <div>{loading ? <Loading></Loading> : "Welcome to the BlogApp!"}</div>
+    <HomeLayout>
+      <div>{loading ? <Loading></Loading> : <div className="container mx-auto px-4"></div> }</div>
+    </HomeLayout>
   )
 }
 

@@ -150,7 +150,7 @@ setContent(response.blogcontent ?? "");
     []
   );
 
-  const blogCategories = [
+const blogCategories = [
     "Technology",
     "Health",
     "Travel",

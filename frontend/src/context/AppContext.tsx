@@ -46,6 +46,8 @@ interface AppContextType {
   setUser: React.Dispatch<React.SetStateAction<User | null>>;
   setLoading : React.Dispatch<React.SetStateAction<boolean>>;
   setIsAuth : React.Dispatch<React.SetStateAction<boolean>>;
+  blogs?:Blog[] | null;
+  blogLoading?:boolean;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -77,6 +79,22 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
     }
   }
 
+  const [blogLoading, setBlogLoading] = useState(true);
+  const[blogs,setBlogs]=useState<Blog[] | null>([]);
+  async function fetchBlogs() {
+    setBlogLoading(true);
+    try {
+      const { data } = await axios.get(`${blog_service}/api/v1/blogs/all`);
+
+      const blogs = data as Blog[]; 
+      setBlogs(blogs);
+    } catch (error) {
+      console.log("Error fetching blogs:", error);
+    } finally {
+      setBlogLoading(false);
+    }
+  }
+
   async function logOutUser(){
     Cookies.remove("token");
     setUser(null);
@@ -85,9 +103,10 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   }
   useEffect(() => {
     fetchUser();
+    fetchBlogs();
   }, []);
   return (
-    <AppContext.Provider value={{ user,setIsAuth,isAuth,loading,setLoading,setUser,logOutUser }}>
+    <AppContext.Provider value={{ user,setIsAuth,isAuth,loading,setLoading,setUser,logOutUser,blogs,blogLoading }}>
       <GoogleOAuthProvider clientId="1044738267238-fr4rohnkefmoecku7eetdi04ddva9201.apps.googleusercontent.com">
         {children}
         <Toaster />
