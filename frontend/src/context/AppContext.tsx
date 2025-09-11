@@ -50,6 +50,7 @@ interface AppContextType {
   blogLoading?:boolean;
   setSearchQuery?:React.Dispatch<React.SetStateAction<string>>;
   searchQuery?:string;
+  category?:string;
   setCategory?:React.Dispatch<React.SetStateAction<string>>;
 }
 
@@ -116,7 +117,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   }, [category,searchQuery]);
 
   return (
-    <AppContext.Provider value={{ user,setIsAuth,isAuth,loading,setLoading,setUser,logOutUser,blogs,blogLoading,setCategory,setSearchQuery,searchQuery }}>
+    <AppContext.Provider value={{ user,setIsAuth,isAuth,loading,setLoading,setUser,logOutUser,blogs,blogLoading,setCategory,setSearchQuery,searchQuery,category }}>
       <GoogleOAuthProvider clientId="1044738267238-fr4rohnkefmoecku7eetdi04ddva9201.apps.googleusercontent.com">
         {children}
         <Toaster />
