@@ -119,6 +119,29 @@ const aiDescriptionResponse = async () => {
   }
 };
 
+const[aiBlogLoading,setAiBlogLoading]=useState(false);
+
+const aiBlogResponse = async () => {
+  try {
+    setAiBlogLoading(true);
+    const { data } = await axios.post(`${author_service}/api/v1/ai/blogcontent`, {
+      title: formData.title,
+      content: formData.description
+    }, {
+      headers: {
+        Authorization: `Bearer ${Cookies.get("token")}`,
+      },
+    });
+const response = data as { blogcontent: string };
+setFormData({ ...formData, blogcontent: response.blogcontent ?? "" });
+setContent(response.blogcontent ?? "");
+  } catch (error) {
+    toast.error("Something went wrong");
+  } finally {
+    setAiBlogLoading(false);
+  }
+};
+
   const config = useMemo(
     () => ({
       readonly: false, // all options from https://xdsoft.net/jodit/docs/,
@@ -220,8 +243,8 @@ const aiDescriptionResponse = async () => {
                   Write your blog content here... Please add Image after
                   improving your grammar and spellings.
                 </p>
-                <Button type="submit" size={"sm"}>
-                  <RefreshCw size={16} />
+                <Button type="button" size={"sm"} onClick={aiBlogResponse} disabled={aiBlogLoading}>
+                  <RefreshCw size={16} className={aiBlogLoading ? "animate-spin" : ""} />
                   <span className="ml-2">Fix Grammar</span>
                 </Button>
               </div>
