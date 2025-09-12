@@ -9,12 +9,13 @@ import { Blog, blog_service, User, userAppData } from '@/context/AppContext'
 import axios from 'axios';
 import { Bookmark, Edit, Trash2Icon } from 'lucide-react';
 import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
 
 const BlogPage = () => {
 
     const{isAuth,user} =userAppData();
+    const router = useRouter();
     const{id} = useParams();
     const[blog,setBlog]=useState<Blog | null>(null);
     const[author,setAuthor]=useState<User | null>(null);
@@ -55,7 +56,7 @@ async function fetchSingleBlog() {
                 {
                     blog.author === author._id && 
                     <>
-                    <Button size={'sm'} className='cursor-pointer'><Edit></Edit></Button>
+                    <Button size={'sm'} className='cursor-pointer' onClick={() => router.push(`/blog/edit/${id}`)}><Edit></Edit></Button>
                     <Button size={'sm'} variant={'destructive'} className='mx-2 cursor-pointer'><Trash2Icon></Trash2Icon></Button>
                     </>
                 }

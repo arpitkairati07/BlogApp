@@ -11,20 +11,34 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { RefreshCw } from "lucide-react";
-import React, { use, useMemo, useRef, useState } from "react";
+import React, { use, useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
 import Cookies from "js-cookie";
-import { author_service, userAppData } from "@/context/AppContext";
-import toast from "react-hot-toast";
 import axios from "axios";
-
+import { author_service, blog_service, userAppData } from "@/context/AppContext";
+import toast from "react-hot-toast";
+import { useParams, useRouter } from "next/navigation";
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
-const AddBlog = () => {
+export const blogCategories = [
+  "Technology",
+  "Health",
+  "Travel",
+  "Finance",
+  "Food",
+  "Lifestyle",
+  "Education",
+  "Entertainment",
+  "Sports",
+  "Study",
+];
+
+const EditBlogPage = () => {
   const editor = useRef(null);
   const [content, setContent] = useState("");
+  const router = useRouter();
   const {fetchBlogs} =userAppData();
+  const { id } = useParams();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -41,9 +55,46 @@ const AddBlog = () => {
     const file = e.target.files?.[0];
     setFormData({ ...formData, image: file });
   };
-  const handleSubmit = async (e: any) => {
+
+  const config = useMemo(
+    () => ({
+      readonly: false, // all options from https://xdsoft.net/jodit/docs/,
+      placeholder: "Start typings...",
+    }),
+    []
+  );
+  const [existingImage, setExistingImage] = useState<string | null>(null);
+
+  useEffect(() => {
+  const fetchBlog = async () => {
+    setLoading(true);
+    try {
+      const { data } = await axios.get(`${blog_service}/api/v1/blog/${id}`);
+      const blog = (data as { blog: any }).blog;
+      setFormData({
+        title: blog.title,
+        description: blog.description,
+        category: blog.category,
+        image: blog.image,
+        blogcontent: blog.blogcontent,
+      });
+      setContent(blog.blogcontent);
+      setExistingImage(blog.image);
+    } catch (error) {
+      console.log(error);
+      toast.error("Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+  if (id) {
+    fetchBlog();
+  }
+}, [id]);
+  const handleSubmit = async(e:any) => {
     e.preventDefault();
     setLoading(true);
+
     const formDataToSend = new FormData();
     formDataToSend.append("title", formData.title);
     formDataToSend.append("description", formData.description);
@@ -55,7 +106,7 @@ const AddBlog = () => {
     try {
       const token = Cookies.get("token");
       const { data } = await axios.post(
-        `${author_service}/api/v1/blog/new`,
+        `${author_service}/api/v1/blog/${id}`,
         formDataToSend,
         {
           headers: {
@@ -63,108 +114,15 @@ const AddBlog = () => {
           },
         }
       );
-      toast.success("Blog created successfully");
-      setFormData({
-        title: "",
-        description: "",
-        category: "",
-        image: null,
-        blogcontent: "",
-      });
-      setContent("");
-      setTimeout(() => {fetchBlogs && fetchBlogs()}, 4000);
+      toast.success("Blog updated successfully");
+      router.push(`/blog/${id}`);
     } catch (error) {
       toast.error("Something went wrong");
     } finally {
       setLoading(false);
     }
   };
-  const[aiTitle,setAiTitle]=useState(false);
 
-  const aiTitleResponse = async () => {
-  try {
-    setAiTitle(true);
-    const { data } = await axios.post(`${author_service}/api/v1/ai/title`, {
-      text: formData.title
-    }, {
-      headers: {
-        Authorization: `Bearer ${Cookies.get("token")}`,
-      },
-    });
-    const response = data as { title: string }; 
-    setFormData({ ...formData, title: response.title });
-  } catch (error) {
-    toast.error("Something went wrong");
-  } finally {
-    setAiTitle(false);
-  }
-}
-const [aiDescription, setAiDescription] = useState(false);
-
-const aiDescriptionResponse = async () => {
-  try {
-    setAiDescription(true);
-    const { data } = await axios.post(`${author_service}/api/v1/ai/description`, {
-      title: formData.title,
-      description: formData.description
-    }, {
-      headers: {
-        Authorization: `Bearer ${Cookies.get("token")}`,
-      },
-    });
-    const response = data as { description: string };
-    setFormData({ ...formData, description: response.description ?? "" });
-  } catch (error) {
-    toast.error("Something went wrong");
-  } finally {
-    setAiDescription(false);
-  }
-};
-
-const[aiBlogLoading,setAiBlogLoading]=useState(false);
-
-const aiBlogResponse = async () => {
-  try {
-    setAiBlogLoading(true);
-    const { data } = await axios.post(`${author_service}/api/v1/ai/blogcontent`, {
-      title: formData.title,
-      content: formData.description
-    }, {
-      headers: {
-        Authorization: `Bearer ${Cookies.get("token")}`,
-      },
-    });
-const response = data as { blogcontent: string };
-setFormData({ ...formData, blogcontent: response.blogcontent ?? "" });
-setContent(response.blogcontent ?? "");
-  } catch (error) {
-    toast.error("Something went wrong");
-  } finally {
-    setAiBlogLoading(false);
-  }
-};
-
-  const config = useMemo(
-    () => ({
-      readonly: false, // all options from https://xdsoft.net/jodit/docs/,
-      placeholder: "Start typings...",
-    }),
-    []
-  );
-
-const blogCategories = [
-    "Technology",
-    "Health",
-    "Travel",
-    "Finance",
-    "Food",
-    "Lifestyle",
-    "Education",
-    "Entertainment",
-    "Sports",
-    "Study",
-    "Other",
-  ];
   return (
     <div className="max-w-4xl mx-auto p-6">
       <Card>
@@ -181,32 +139,23 @@ const blogCategories = [
                 onChange={handleInputChange}
                 required
                 placeholder="Enter Blog Title"
-                className={aiTitle ? "animate-pulse placeholder:opacity-50" : ""}
               ></Input>
-              {formData.title === "" ? "" :<Button type="button"
-              onClick={aiTitleResponse} disabled={aiTitle}>
-                <RefreshCw className={aiTitle ? "animate-spin" : ""} />
-              </Button>}
             </div>
 
             <Label>Description</Label>
             <div className="flex justify-center items-center gap-2">
-<Input
-  name="description"
-  value={formData.description ?? ""}
-  onChange={handleInputChange}
-  required
-  placeholder="Enter Blog Description"
-  className={aiDescription ? "animate-pulse placeholder:opacity-50" : ""}
-/>
-              <Button type="button"
-              onClick={aiDescriptionResponse} disabled={aiDescription}>
-                <RefreshCw className={aiDescription ? "animate-spin" : ""} />
-              </Button>
+              <Input
+                name="description"
+                value={formData.description ?? ""}
+                onChange={handleInputChange}
+                required
+                placeholder="Enter Blog Description"
+              />
             </div>
 
             <Label>Category</Label>
             <Select
+              value={formData.category}
               onValueChange={(value: any) =>
                 setFormData({ ...formData, category: value })
               }
@@ -215,7 +164,7 @@ const blogCategories = [
                 <SelectValue
                   placeholder="Select a category"
                   className="cursor-pointer"
-                ></SelectValue>
+                />
                 <SelectContent>
                   {blogCategories.map((category) => (
                     <SelectItem
@@ -231,6 +180,27 @@ const blogCategories = [
             </Select>
             <div>
               <Label>Upload Image</Label>
+              {formData.image &&
+              typeof formData.image === "object" &&
+              "type" in formData.image ? (
+                <img
+                  src={URL.createObjectURL(formData.image as File)}
+                  alt=""
+                  className="w-40 h-40 object-cover rounded mb-2"
+                />
+              ) : typeof formData.image === "string" && formData.image ? (
+                <img
+                  src={formData.image}
+                  alt=""
+                  className="w-40 h-40 object-cover rounded mb-2"
+                />
+              ) : existingImage ? (
+                <img
+                  src={existingImage}
+                  alt=""
+                  className="w-40 h-40 object-cover rounded mb-2"
+                />
+              ) : null}
               <Input
                 type="file"
                 accept="image/*"
@@ -245,10 +215,6 @@ const blogCategories = [
                   Write your blog content here... Please add Image after
                   improving your grammar and spellings.
                 </p>
-                <Button type="button" size={"sm"} onClick={aiBlogResponse} disabled={aiBlogLoading}>
-                  <RefreshCw size={16} className={aiBlogLoading ? "animate-spin" : ""} />
-                  <span className="ml-2">Fix Grammar</span>
-                </Button>
               </div>
               <JoditEditor
                 ref={editor}
@@ -271,4 +237,4 @@ const blogCategories = [
   );
 };
 
-export default AddBlog;
+export default EditBlogPage;
