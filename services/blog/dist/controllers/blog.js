@@ -63,4 +63,28 @@ export const getSingleBlog = TryCatch(async (req, res) => {
     console.log(`Data coming from Postgress Database`);
     res.status(200).json({ blog: blog[0], author: data.user });
 });
+export const addComment = TryCatch(async (req, res) => {
+    const { id: blogid } = req.params;
+    const { comment } = req.body;
+    await sql `INSERT INTO comments (blogid,userid,comment,username) VALUES (${blogid},${req.user?._id},${comment},${req.user?.name}) RETURNING *`;
+    res.json({ message: "Comment added successfully" });
+});
+export const getAllComments = TryCatch(async (req, res) => {
+    const { id: blogid } = req.params;
+    const comments = await sql `SELECT * FROM comments WHERE blogid=${blogid} ORDER BY created_at DESC`;
+    res.json({ comments });
+});
+export const deleteComment = TryCatch(async (req, res) => {
+    const { id: commentid } = req.params;
+    const comment = await sql `SELECT * FROM comments WHERE id=${commentid} AND userid=${req.user?._id}`;
+    if (comment.length === 0) {
+        return res.status(404).json({ message: "Comment not found" });
+    }
+    if (comment[0]?.userid !== req.user?._id) {
+        return res.status(403).json({ message: "You are not authorized to delete this comment" });
+        return;
+    }
+    await sql `DELETE FROM comments WHERE id=${commentid}`;
+    res.json({ message: "Comment deleted successfully" });
+});
 //# sourceMappingURL=blog.js.map

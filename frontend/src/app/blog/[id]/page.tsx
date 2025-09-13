@@ -11,6 +11,8 @@ import { Bookmark, Edit, Trash2Icon } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
+import Cookies from 'js-cookie';
+import toast from 'react-hot-toast';
 
 const BlogPage = () => {
 
@@ -20,6 +22,8 @@ const BlogPage = () => {
     const[blog,setBlog]=useState<Blog | null>(null);
     const[author,setAuthor]=useState<User | null>(null);
     const[loading,setLoading]=useState<boolean>(false);
+    const[comment,setComment]=useState<string>("");
+    const[comments,setComments]=useState<Array<{_id:string,comment:string,author:string,blog:string,created_at:string}>>([]);
 
 async function fetchSingleBlog() {
   try {
@@ -42,6 +46,25 @@ async function fetchSingleBlog() {
 
     if(!blog || !author){
         return <Loading></Loading>
+    }
+
+
+    async function addComment(){
+      try {
+        setLoading(true);
+        const token=Cookies.get("token") as string;
+        const { data } = await axios.post(`${blog_service}/api/v1/comment/${id}`,{comment},{
+          headers:{
+            Authorization:`Bearer ${token}`
+          }
+        }); 
+        toast.success("Comment added successfully");
+        setComment("");
+      } catch (error) {
+        toast.error("Something went wrong");
+      }finally{
+        setLoading(false);
+      }
     }
   return (
     <div className='max-w-4xl mx-auto p-6 space-y-6'>
@@ -84,8 +107,8 @@ async function fetchSingleBlog() {
           </CardHeader>
           <CardContent>
             <Label htmlFor='comment'>Your Comment</Label>
-            <Input id='comment' placeholder='Write your comment here...' className='my-2'/>
-            <Button>Post comment</Button>
+            <Input id='comment' placeholder='Write your comment here...' className='my-2' value={comment} onChange={(e) => setComment(e.target.value)} />
+            <Button className='cursor-pointer' onClick={addComment} disabled={loading}>{loading ? "Posting...." : "Post Comment"}</Button>
           </CardContent>
         </Card>
       }
