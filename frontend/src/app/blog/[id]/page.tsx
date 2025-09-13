@@ -162,7 +162,7 @@ async function deletBlog() {
                     blog.author === author._id && 
                     <>
                     <Button size={'sm'} className='cursor-pointer' onClick={() => router.push(`/blog/edit/${id}`)}><Edit></Edit></Button>
-                    <Button size={'sm'} variant={'destructive'} className='mx-2 cursor-pointer' onClick={deletBlog}><Trash2Icon></Trash2Icon></Button>
+                    <Button size={'sm'} variant={'destructive'} className='mx-2 cursor-pointer' onClick={deletBlog} disabled={loading}><Trash2Icon></Trash2Icon></Button>
                     </>
                 }
             </p>
