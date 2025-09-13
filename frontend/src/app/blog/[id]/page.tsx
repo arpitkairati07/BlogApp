@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Blog, blog_service, User, userAppData } from '@/context/AppContext'
+import { author_service, Blog, blog_service, User, userAppData } from '@/context/AppContext'
 import axios from 'axios';
 import { Bookmark, Edit, Trash2, Trash2Icon, User2 } from 'lucide-react';
 import Link from 'next/link';
@@ -24,7 +24,7 @@ interface Comment {
 
 const BlogPage = () => {
 
-    const{isAuth,user} =userAppData();
+    const{isAuth,user,fetchBlogs} =userAppData();
     const router = useRouter();
     const{id} = useParams();
     const[blog,setBlog]=useState<Blog | null>(null);
@@ -89,6 +89,36 @@ const deleteComment = async (id: string) => {
   }
 };
 
+async function deletBlog() {
+    if (confirm("Are you sure you want to delete this blog")) {
+      try {
+        setLoading(true);
+        const token = Cookies.get("token");
+        const { data } = await axios.delete(
+          `${author_service}/api/v1/blog/${id}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        const response = data as { message: string }; 
+      toast.success(response.message);
+        router.push("/blogs");
+        fetchBlogs?.();
+        setTimeout(() => {
+          fetchBlogs?.();
+        }, 4000);
+      } catch (error) {
+        toast.error("Problem while deleting comment");
+        console.log(error);
+      } finally {
+        setLoading(false);
+      }
+    }
+  }
+
+
     
     async function addComment(){
       try {
@@ -132,7 +162,7 @@ const deleteComment = async (id: string) => {
                     blog.author === author._id && 
                     <>
                     <Button size={'sm'} className='cursor-pointer' onClick={() => router.push(`/blog/edit/${id}`)}><Edit></Edit></Button>
-                    <Button size={'sm'} variant={'destructive'} className='mx-2 cursor-pointer'><Trash2Icon></Trash2Icon></Button>
+                    <Button size={'sm'} variant={'destructive'} className='mx-2 cursor-pointer' onClick={deletBlog}><Trash2Icon></Trash2Icon></Button>
                     </>
                 }
             </p>
