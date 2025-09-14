@@ -126,6 +126,6 @@ export const saveBlog = TryCatch(async(req:AuthenticatedRequest,res)=>{
 })
 
 export const getSavedBlog = TryCatch(async(req:AuthenticatedRequest,res)=>{
-    const blogs = await sql`SELECT b.* FROM blogs b JOIN savedblogs sb ON b.id = sb.blogid WHERE sb.userid = ${req.user?._id} ORDER BY sb.created_at DESC`;
+    const blogs = await sql`SELECT * FROM savedblogs WHERE userid=${req.user?._id} ORDER BY created_at DESC`;
     res.json({ blogs });
 })

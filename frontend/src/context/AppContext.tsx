@@ -119,7 +119,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
           Authorization:`Bearer ${Cookies.get("token")}`
         }
       });
-      const saved = data as savedBlogType[];
+      const saved = (data as { blogs: savedBlogType[] }).blogs;
       setSavedBlogs(saved);
     } catch (error) {
       console.log(error);
