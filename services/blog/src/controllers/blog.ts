@@ -102,3 +102,30 @@ export const deleteComment = TryCatch(async(req:AuthenticatedRequest,res)=>{
     await sql`DELETE FROM comments WHERE id=${commentid}`;
     res.json({message:"Comment deleted successfully"});
 })
+
+
+export const saveBlog = TryCatch(async(req:AuthenticatedRequest,res)=>{
+    const {blogid}=req.params;
+    const userId=req.user?._id;
+
+    if(!blogid || !userId){
+        return res.status(400).json({message:"Blog ID and User ID are required"});
+        return;
+    }
+    const existing=await sql`SELECT * FROM savedblogs WHERE blogid=${blogid} AND userid=${userId}`;
+
+    if(existing.length == 0){
+        await sql`INSERT INTO savedblogs (blogid,userid) VALUES (${blogid},${userId})`;
+        return res.json({message:"Blog saved successfully"});
+        return;
+    }else{
+        await sql`DELETE FROM savedblogs WHERE blogid=${blogid} AND userid=${userId}`;
+        return res.json({message:"Blog removed from saved blogs"});
+        return;
+    }
+})
+
+export const getSavedBlog = TryCatch(async(req:AuthenticatedRequest,res)=>{
+    const blogs = await sql`SELECT b.* FROM blogs b JOIN savedblogs sb ON b.id = sb.blogid WHERE sb.userid = ${req.user?._id} ORDER BY sb.created_at DESC`;
+    res.json({ blogs });
+})

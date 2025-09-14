@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { author_service, Blog, blog_service, User, userAppData } from '@/context/AppContext'
 import axios from 'axios';
-import { Bookmark, Edit, Trash2, Trash2Icon, User2 } from 'lucide-react';
+import { BookCheck, Bookmark, BookmarkCheck, Edit, Trash2, Trash2Icon, User2 } from 'lucide-react';
 import Link from 'next/link';
 import { useParams, useRouter } from 'next/navigation';
 import React, { useEffect, useState } from 'react'
@@ -24,7 +24,7 @@ interface Comment {
 
 const BlogPage = () => {
 
-    const{isAuth,user,fetchBlogs} =userAppData();
+    const{isAuth,user,fetchBlogs,savedBlogs,getSavedBlogs} =userAppData();
     const router = useRouter();
     const{id} = useParams();
     const[blog,setBlog]=useState<Blog | null>(null);
@@ -139,6 +139,35 @@ async function deletBlog() {
       }
     }
 
+    const [saved, setSaved] = useState<boolean>(false);
+
+    useEffect(()=>{
+      if(savedBlogs && savedBlogs.some((e)=>e.blogid === id)){
+        setSaved(true);
+      }else{
+        setSaved(false);
+      }
+    },[savedBlogs,id])
+
+    async function saveBlog(){
+      const token=Cookies.get("token") as string;
+      try {
+        setLoading(true);
+        const {data} = await axios.post(`${blog_service}/api/v1/save/${id}`,{},{
+          headers:{
+            Authorization:`Bearer ${token}`
+          }
+        });
+        toast.success((data as {message:string}).message);
+        setSaved(!saved);
+        getSavedBlogs?.();  
+      } catch (error) {
+        toast.error("Something went wrong in saving the blog");
+      }finally{
+        setLoading(false);
+      }
+    }
+
 
 
     useEffect(()=>{
@@ -156,7 +185,8 @@ async function deletBlog() {
             <p className="text-gray-600 mt-2 flex items-center">
                 <Link className='flex items-center gap-2' href={`/profile/${author?._id}`}><img src={author?.image} alt="Author Image" className='w-10 h-10 rounded-full mr-2' />{author?.name}</Link>
                 {
-                    isAuth && <Button variant={'ghost'} className='mx-3 cursor-pointer' size={'lg'}><Bookmark></Bookmark></Button>
+                    isAuth && <Button variant={'ghost'} className='mx-3 cursor-pointer' size={'lg'}
+                    disabled={loading} onClick={saveBlog}>{saved ? <BookmarkCheck /> : <Bookmark />} </Button>
                 }
                 {
                     blog.author === author._id && 

@@ -38,6 +38,13 @@ export interface Blog {
   created_at: string;
 }
 
+interface savedBlogType{
+  id : string;
+  blogid : string;
+  userid : string;
+  created_at : string;
+}
+
 interface AppContextType {
   user: User | null;
   loading:boolean;
@@ -53,6 +60,8 @@ interface AppContextType {
   category?:string;
   setCategory?:React.Dispatch<React.SetStateAction<string>>;
   fetchBlogs?:()=>Promise<void>;
+  savedBlogs?:savedBlogType[] | null;
+  getSavedBlogs?:()=>Promise<void>;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -102,6 +111,20 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
       setBlogLoading(false);
     }
   }
+  const[savedBlogs,setSavedBlogs]=useState<savedBlogType[] | null>([]);
+  async function getSavedBlogs(){
+    try {
+      const {data} = await axios.get(`${blog_service}/api/v1/blog/saved/all`,{
+        headers:{
+          Authorization:`Bearer ${Cookies.get("token")}`
+        }
+      });
+      const saved = data as savedBlogType[];
+      setSavedBlogs(saved);
+    } catch (error) {
+      console.log(error);
+    }
+  }
 
   async function logOutUser(){
     Cookies.remove("token");
@@ -111,6 +134,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   }
   useEffect(() => {
     fetchUser();
+    getSavedBlogs();
   }, []);
 
   useEffect(() => {
@@ -118,7 +142,7 @@ export const AppProvider: React.FC<AppProviderProps> = ({ children }) => {
   }, [category,searchQuery]);
 
   return (
-    <AppContext.Provider value={{ user,setIsAuth,isAuth,loading,setLoading,setUser,logOutUser,blogs,blogLoading,setCategory,setSearchQuery,searchQuery,category,fetchBlogs }}>
+    <AppContext.Provider value={{ user,setIsAuth,isAuth,loading,setLoading,setUser,logOutUser,blogs,blogLoading,setCategory,setSearchQuery,searchQuery,category,fetchBlogs,savedBlogs,getSavedBlogs }}>
       <GoogleOAuthProvider clientId="1044738267238-fr4rohnkefmoecku7eetdi04ddva9201.apps.googleusercontent.com">
         {children}
         <Toaster />
