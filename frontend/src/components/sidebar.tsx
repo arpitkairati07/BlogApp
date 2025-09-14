@@ -12,7 +12,7 @@ import {
   SidebarMenuItem
 } from './ui/sidebar'
 import { Input } from './ui/input'
-import { BoxSelect } from 'lucide-react'
+import { BoxSelect, CheckSquare } from 'lucide-react'
 import { userAppData } from '@/context/AppContext'
 
 const SideBar = () => {
@@ -30,29 +30,34 @@ const SideBar = () => {
     "Other",
   ];
 
-  const {searchQuery,setSearchQuery,setCategory} =userAppData();
+  const { searchQuery, setSearchQuery, setCategory, category } = userAppData();
+
   return (
     <Sidebar>
       <SidebarHeader className='bg-white text-2xl font-bold mt-5'>
-        The Reading Retreat
+        BlogFusion
       </SidebarHeader>
       <SidebarContent className='bg-white'>
         <SidebarGroup>
           <SidebarGroupLabel>Search</SidebarGroupLabel>
-          <Input type='text' value={searchQuery} onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
-          placeholder='Search your desired blog' />
+          <Input
+            type='text'
+            value={searchQuery}
+            onChange={(e) => setSearchQuery && setSearchQuery(e.target.value)}
+            placeholder='Search your desired blog'
+          />
           <SidebarGroupLabel>Categories</SidebarGroupLabel>
           <SidebarMenu>
             <SidebarMenuItem>
               <SidebarMenuButton onClick={() => setCategory && setCategory("")}>
-                <BoxSelect />
+                {category === "" ? <CheckSquare /> : <BoxSelect />}
                 <span>All</span>
               </SidebarMenuButton>
             </SidebarMenuItem>
             {blogCategories.map((e, i) => (
               <SidebarMenuItem key={i} onClick={() => setCategory && setCategory(e)}>
                 <SidebarMenuButton>
-                  <BoxSelect />
+                  {category === e ? <CheckSquare /> : <BoxSelect />}
                   <span>{e}</span>
                 </SidebarMenuButton>
               </SidebarMenuItem>

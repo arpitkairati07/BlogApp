@@ -57,9 +57,9 @@ const LoginPage = () => {
           <div className='w-[350px] m-auto mt-[200px]'>
       <Card className="w-full max-w-sm">
       <CardHeader>
-        <CardTitle >Login to Reading Retreat</CardTitle>
+        <CardTitle >Login BlogFusion</CardTitle>
         <CardDescription>
-          Your go to BlogApp
+          Your go to BlogFusion
         </CardDescription>
       </CardHeader>
       <CardContent>

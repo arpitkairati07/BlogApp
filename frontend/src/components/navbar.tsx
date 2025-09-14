@@ -15,7 +15,7 @@ const Navbar = () => {
     <nav className="bg-white shadow-md p-4 z-50">
       <div className="container mx-auto flex justify-between items-center px-0">
         <Link href={"/"} className="text-xl font-bold text-gray-900 ml-0">
-          The Reading Retreat
+          BlogFusion
         </Link>
 
         <div className="md:hidden">
