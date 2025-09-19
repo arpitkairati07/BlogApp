@@ -201,7 +201,7 @@ ___
 
 **Clone the repository:**
 
-    git clone https://github.com//BlogFusion.git
+    git clone https://github.com/arpitkairati07/BlogFusion.git
     cd BlogFusion
 
 
